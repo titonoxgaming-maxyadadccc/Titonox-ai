@@ -1,0 +1,7 @@
+{
+  "name": "TITONOX",
+  "description": "Advanced Jarvis-style Android AI Assistant with voice control, accessibility automation, screen understanding, and productivity management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">TITONOX</string>
+    <string name="accessibility_service_description">TITONOX Accessibility Service enables hands-free voice automation, screen reading, and UI navigation actions as requested by the user.</string>
+    <string name="assistant_name">TITONOX</string>
+    <string name="assistant_owner">Aditya Yadav</string>
+    <string name="official_youtube">TITONOXOFFICIAL</string>
+    <string name="official_instagram">TITONOXOFFICIAL</string>
+</resources>
+
+
