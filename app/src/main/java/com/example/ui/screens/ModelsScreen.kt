@@ -815,9 +815,9 @@ fun ModelsScreen(
                             } else {
                                 when (res.errorCategory) {
                                     ErrorCategory.INVALID_API_KEY -> "INVALID KEY"
-                                    ErrorCategory.RATE_LIMIT -> "RATE LIMITED"
+                                    ErrorCategory.QUOTA_EXCEEDED -> "RATE LIMITED"
                                     ErrorCategory.NETWORK_UNAVAILABLE -> "NETWORK ERROR"
-                                    ErrorCategory.MODEL_NOT_FOUND -> "INVALID MODEL"
+                                    ErrorCategory.MODEL_UNAVAILABLE -> "INVALID MODEL"
                                     ErrorCategory.SERVER_ERROR -> "SERVER ERROR"
                                     else -> "HANDSHAKE ERROR"
                                 }
