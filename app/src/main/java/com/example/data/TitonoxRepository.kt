@@ -223,5 +223,27 @@ class TitonoxRepository(private val db: AppDatabase) {
     suspend fun clearTaskHistory() {
         db.taskHistoryDao().clearTaskHistory()
     }
+
+    val allCustomModels: Flow<List<CustomModelEntity>> = db.customModelDao().getAllCustomModels()
+
+    suspend fun saveCustomModel(model: CustomModelEntity): Long {
+        return db.customModelDao().insertModel(model)
+    }
+
+    suspend fun updateCustomModel(model: CustomModelEntity) {
+        db.customModelDao().updateModel(model)
+    }
+
+    suspend fun deleteCustomModel(id: Long) {
+        db.customModelDao().deleteModelById(id)
+    }
+
+    suspend fun selectCustomModel(id: Long) {
+        db.customModelDao().setSelectedModel(id)
+    }
+
+    suspend fun getSelectedCustomModel(): CustomModelEntity? {
+        return db.customModelDao().getSelectedCustomModel()
+    }
 }
 

@@ -18,23 +18,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CenterFocusStrong
-import androidx.compose.material.icons.filled.EditCalendar
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -50,6 +56,25 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.TitonoxInterface
 import com.example.ui.theme.TitonoxTokens
 
+data class DockDestination(
+    val destination: TitonoxInterface,
+    val label: String,
+    val icon: ImageVector,
+    val testTag: String
+)
+
+val TITONOX_NAV_DESTINATIONS = listOf(
+    DockDestination(TitonoxInterface.HOME, "HOME", Icons.Default.AutoAwesome, "nav_home"),
+    DockDestination(TitonoxInterface.CHAT, "CHAT", Icons.AutoMirrored.Filled.Chat, "nav_chat"),
+    DockDestination(TitonoxInterface.AGENT, "AGENT", Icons.Default.SmartToy, "nav_agent"),
+    DockDestination(TitonoxInterface.AUTOMATION, "AUTO", Icons.Default.AccessibilityNew, "nav_automation"),
+    DockDestination(TitonoxInterface.TOOLS, "TOOLS", Icons.Default.Build, "nav_tools"),
+    DockDestination(TitonoxInterface.VISION, "VISION", Icons.Default.CenterFocusStrong, "nav_vision"),
+    DockDestination(TitonoxInterface.MEMORY, "MEMORY", Icons.Default.Storage, "nav_memory"),
+    DockDestination(TitonoxInterface.MODELS, "MODELS", Icons.Default.Hub, "nav_models"),
+    DockDestination(TitonoxInterface.SETTINGS, "SETTINGS", Icons.Default.Settings, "nav_settings")
+)
+
 @Composable
 fun TitonoxFloatingDock(
     currentInterface: TitonoxInterface,
@@ -58,6 +83,16 @@ fun TitonoxFloatingDock(
     onToggleDevLogs: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val listState = rememberLazyListState()
+
+    // Auto-scroll dock to make selected tab visible
+    LaunchedEffect(currentInterface) {
+        val index = TITONOX_NAV_DESTINATIONS.indexOfFirst { it.destination == currentInterface }
+        if (index >= 0) {
+            listState.animateScrollToItem(index)
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -66,20 +101,19 @@ fun TitonoxFloatingDock(
     ) {
         Surface(
             modifier = Modifier
-                .widthIn(max = 720.dp)
+                .widthIn(max = 760.dp)
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 2.dp)
+                .padding(horizontal = 8.dp, vertical = 2.dp)
                 .testTag("titonox_floating_dock"),
             shape = TitonoxTokens.RadiusPill,
             color = TitonoxTokens.SurfaceElevated,
             border = BorderStroke(1.dp, TitonoxTokens.BorderSubtle),
-            shadowElevation = 12.dp
+            shadowElevation = 14.dp
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Universal Search Quick Button
@@ -99,56 +133,29 @@ fun TitonoxFloatingDock(
                     )
                 }
 
-                // 6 Core Interface Navigation Pills
-                DockInterfaceItem(
-                    label = "CORE",
-                    icon = Icons.Default.AutoAwesome,
-                    isSelected = currentInterface == TitonoxInterface.CORE,
-                    onClick = { onSelectInterface(TitonoxInterface.CORE) },
-                    testTag = "nav_core"
-                )
+                Spacer(modifier = Modifier.width(4.dp))
 
-                DockInterfaceItem(
-                    label = "CONTROL",
-                    icon = Icons.Default.Tune,
-                    isSelected = currentInterface == TitonoxInterface.CONTROL,
-                    onClick = { onSelectInterface(TitonoxInterface.CONTROL) },
-                    testTag = "nav_control"
-                )
+                // 9 Core Navigation Destinations in smooth scrollable row
+                LazyRow(
+                    state = listState,
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items(TITONOX_NAV_DESTINATIONS) { item ->
+                        DockInterfaceItem(
+                            label = item.label,
+                            icon = item.icon,
+                            isSelected = currentInterface == item.destination,
+                            onClick = { onSelectInterface(item.destination) },
+                            testTag = item.testTag
+                        )
+                    }
+                }
 
-                DockInterfaceItem(
-                    label = "VISION",
-                    icon = Icons.Default.CenterFocusStrong,
-                    isSelected = currentInterface == TitonoxInterface.VISION,
-                    onClick = { onSelectInterface(TitonoxInterface.VISION) },
-                    testTag = "nav_vision"
-                )
+                Spacer(modifier = Modifier.width(4.dp))
 
-                DockInterfaceItem(
-                    label = "STUDIO",
-                    icon = Icons.Default.EditCalendar,
-                    isSelected = currentInterface == TitonoxInterface.STUDIO,
-                    onClick = { onSelectInterface(TitonoxInterface.STUDIO) },
-                    testTag = "nav_studio"
-                )
-
-                DockInterfaceItem(
-                    label = "PLAYER",
-                    icon = Icons.Default.MusicNote,
-                    isSelected = currentInterface == TitonoxInterface.PLAYER,
-                    onClick = { onSelectInterface(TitonoxInterface.PLAYER) },
-                    testTag = "nav_player"
-                )
-
-                DockInterfaceItem(
-                    label = "ORB",
-                    icon = Icons.Default.Palette,
-                    isSelected = currentInterface == TitonoxInterface.ORB_STUDIO,
-                    onClick = { onSelectInterface(TitonoxInterface.ORB_STUDIO) },
-                    testTag = "nav_orb_studio"
-                )
-
-                // Dev Telemetry Console Toggle Button
+                // Telemetry / Dev Logs Toggle
                 IconButton(
                     onClick = onToggleDevLogs,
                     modifier = Modifier
@@ -159,7 +166,7 @@ fun TitonoxFloatingDock(
                 ) {
                     Icon(
                         imageVector = Icons.Default.BugReport,
-                        contentDescription = "Dev Console",
+                        contentDescription = "Dev Telemetry Console",
                         tint = TitonoxTokens.TextSecondary,
                         modifier = Modifier.size(17.dp)
                     )
@@ -179,7 +186,7 @@ fun DockInterfaceItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val scale = if (isPressed) 0.94f else 1.0f
+    val scale = if (isPressed) 0.93f else 1.0f
 
     val bgAnim by animateColorAsState(
         targetValue = if (isSelected) TitonoxTokens.AccentPrimary else Color.Transparent,
@@ -203,7 +210,7 @@ fun DockInterfaceItem(
         shape = TitonoxTokens.RadiusPill
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -219,7 +226,7 @@ fun DockInterfaceItem(
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = contentColor,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
+                        fontSize = 11.sp,
                         letterSpacing = 0.5.sp
                     )
                 )
@@ -227,4 +234,3 @@ fun DockInterfaceItem(
         }
     }
 }
-

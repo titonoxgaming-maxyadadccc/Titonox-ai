@@ -136,3 +136,27 @@ interface TaskHistoryDao {
     suspend fun clearTaskHistory()
 }
 
+@Dao
+interface CustomModelDao {
+    @Query("SELECT * FROM custom_models ORDER BY timestamp DESC")
+    fun getAllCustomModels(): Flow<List<CustomModelEntity>>
+
+    @Query("SELECT * FROM custom_models WHERE isSelected = 1 LIMIT 1")
+    suspend fun getSelectedCustomModel(): CustomModelEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertModel(model: CustomModelEntity): Long
+
+    @Update
+    suspend fun updateModel(model: CustomModelEntity)
+
+    @Query("DELETE FROM custom_models WHERE id = :id")
+    suspend fun deleteModelById(id: Long)
+
+    @Query("UPDATE custom_models SET isSelected = CASE WHEN id = :id THEN 1 ELSE 0 END")
+    suspend fun setSelectedModel(id: Long)
+
+    @Query("DELETE FROM custom_models")
+    suspend fun clearAllModels()
+}
+

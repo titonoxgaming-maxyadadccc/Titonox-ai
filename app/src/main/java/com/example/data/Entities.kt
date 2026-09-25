@@ -81,3 +81,24 @@ data class TaskHistoryEntity(
     val timestamp: Long = System.currentTimeMillis()
 )
 
+@Entity(tableName = "custom_models")
+data class CustomModelEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val providerName: String,
+    val modelName: String,
+    val modelId: String,
+    val apiBaseUrl: String,
+    val apiKey: String,
+    val requestFormat: String = "OpenAI",
+    val responseFormat: String = "OpenAI",
+    val authHeader: String = "Bearer",
+    val temperature: Float = 0.7f,
+    val maxTokens: Int = 2048,
+    val contextWindow: Int = 32768,
+    val visionSupport: Boolean = false,
+    val toolCalling: Boolean = true,
+    val streaming: Boolean = true,
+    val isSelected: Boolean = false,
+    val timestamp: Long = System.currentTimeMillis()
+)
+

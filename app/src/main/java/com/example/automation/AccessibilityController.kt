@@ -76,6 +76,19 @@ class AccessibilityController(private val context: Context) {
         return service.openRecents()
     }
 
+    fun pressRecents(): Boolean = openRecents()
+
+    fun scrollDown(): Boolean = scroll(forward = true)
+
+    fun scrollUp(): Boolean = scroll(forward = false)
+
+    fun lockScreen(): Boolean {
+        val service = TitonoxAccessibilityService.instance ?: return false
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN)
+        } else false
+    }
+
     fun getCurrentForegroundPackage(): String {
         return TitonoxAccessibilityService.instance?.currentPackage ?: "Unknown"
     }

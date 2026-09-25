@@ -79,6 +79,12 @@ import com.example.ui.TitonoxInterface
 import com.example.ui.TitonoxViewModel
 import com.example.ui.components.GlobalSearchDialog
 import com.example.ui.components.TitonoxFloatingDock
+import com.example.ui.screens.AgentHubScreen
+import com.example.ui.screens.AutomationScreen
+import com.example.ui.screens.ChatScreen
+import com.example.ui.screens.MemoryScreen
+import com.example.ui.screens.ModelsScreen
+import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.TitonoxApiSettingsScreen
 import com.example.ui.screens.TitonoxControlScreen
 import com.example.ui.screens.TitonoxCoreScreen
@@ -86,6 +92,8 @@ import com.example.ui.screens.TitonoxOrbStudioScreen
 import com.example.ui.screens.TitonoxPlayerScreen
 import com.example.ui.screens.TitonoxStudioScreen
 import com.example.ui.screens.TitonoxVisionScreen
+import com.example.ui.screens.ToolsScreen
+import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Key
 import com.example.ui.theme.CyberBlack
 import com.example.ui.theme.CyberDarkNavy
@@ -220,6 +228,8 @@ fun TitonoxEcosystemApp(
     val isAccessibilityActive = viewModel.accessibilityController.isServiceActive()
     val isMuted by viewModel.voiceManager.isMuted.collectAsState()
     val isScreenCapturing by viewModel.screenCaptureManager.isScreenCaptureActive.collectAsState()
+    val activeProviderName by viewModel.apiManager.activeProviderName.collectAsState()
+    val activeModelName by viewModel.apiManager.activeModelName.collectAsState()
 
     val currentPlan by viewModel.currentPlan.collectAsState()
     val taskState by viewModel.taskState.collectAsState()
@@ -339,19 +349,36 @@ fun TitonoxEcosystemApp(
                             )
                         }
 
-                        // AI & API Settings Button
-                        IconButton(
-                            onClick = { viewModel.selectInterface(TitonoxInterface.API_SETTINGS) },
+                        // AI & API Provider Badge
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = DarkNavy.copy(alpha = 0.9f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonBlue.copy(alpha = 0.5f)),
                             modifier = Modifier
-                                .size(28.dp)
+                                .clickable { viewModel.selectInterface(TitonoxInterface.MODELS) }
                                 .testTag("topbar_api_settings_btn")
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Key,
-                                contentDescription = "AI & API Settings",
-                                tint = if (currentInterface == TitonoxInterface.API_SETTINGS) ElectricCyan else HoloWhite.copy(alpha = 0.7f),
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Hub,
+                                    contentDescription = "AI Models Hub",
+                                    tint = ElectricCyan,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "$activeProviderName • $activeModelName",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = HoloWhite,
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    maxLines = 1
+                                )
+                            }
                         }
 
                         // Emergency STOP TopBar Button
@@ -429,37 +456,51 @@ fun TitonoxEcosystemApp(
                         .zIndex(10f)
                 )
 
-                // Dynamic Screen Switching across the 6 interfaces
+                // Dynamic Screen Switching across all 9 primary interfaces + secondary studios
                 Crossfade(
                     targetState = currentInterface,
                     label = "InterfaceCrossfade"
                 ) { target ->
                     when (target) {
-                        TitonoxInterface.CORE -> {
+                        TitonoxInterface.HOME -> {
                             TitonoxCoreScreen(
                                 viewModel = viewModel,
                                 onOpenUrl = onOpenUrl
                             )
                         }
-                    TitonoxInterface.CONTROL -> {
-                        TitonoxControlScreen(viewModel = viewModel)
-                    }
-                    TitonoxInterface.VISION -> {
-                        TitonoxVisionScreen(viewModel = viewModel)
-                    }
-                    TitonoxInterface.STUDIO -> {
-                        TitonoxStudioScreen(viewModel = viewModel)
-                    }
-                    TitonoxInterface.PLAYER -> {
-                        TitonoxPlayerScreen(viewModel = viewModel)
-                    }
-                    TitonoxInterface.ORB_STUDIO -> {
-                        TitonoxOrbStudioScreen(viewModel = viewModel)
-                    }
-                    TitonoxInterface.API_SETTINGS -> {
-                        TitonoxApiSettingsScreen(
-                            onNavigateBack = { viewModel.selectInterface(TitonoxInterface.CORE) }
-                        )
+                        TitonoxInterface.CHAT -> {
+                            ChatScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.AGENT -> {
+                            AgentHubScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.AUTOMATION -> {
+                            AutomationScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.TOOLS -> {
+                            ToolsScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.VISION -> {
+                            TitonoxVisionScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.MEMORY -> {
+                            MemoryScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.MODELS -> {
+                            ModelsScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.SETTINGS -> {
+                            SettingsScreen(
+                                viewModel = viewModel,
+                                onOpenUrl = onOpenUrl
+                            )
+                        }
+                        TitonoxInterface.PLAYER -> {
+                            TitonoxPlayerScreen(viewModel = viewModel)
+                        }
+                        TitonoxInterface.ORB_STUDIO -> {
+                            TitonoxOrbStudioScreen(viewModel = viewModel)
+                        }
                     }
                 }
             }
@@ -586,5 +627,4 @@ fun TitonoxEcosystemApp(
             }
         }
     }
-}
 }

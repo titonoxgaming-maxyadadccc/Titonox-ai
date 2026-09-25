@@ -35,6 +35,7 @@ object TitonoxTokens {
     val TextPrimary = Color(0xFFF4F6F8)
     val TextSecondary = Color(0xFF8E9AA8)
     val TextMuted = Color(0xFF5A6675)
+    val TextTertiary = Color(0xFF5A6675)
 
     // State Colors
     val StateIdle = Color(0xFF00D2FF)

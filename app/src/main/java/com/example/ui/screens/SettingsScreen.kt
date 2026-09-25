@@ -45,6 +45,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +59,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.MemoryEntity
+import com.example.ui.TitonoxInterface
+import com.example.ui.TitonoxViewModel
 import com.example.device.BatteryInfo
 import com.example.device.SimSlotInfo
 import com.example.ui.DevLog
@@ -745,4 +748,34 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+@Composable
+fun SettingsScreen(
+    viewModel: TitonoxViewModel,
+    onOpenUrl: (String) -> Unit
+) {
+    val isAccessibilityActive = viewModel.accessibilityController.isServiceActive()
+    val batteryInfo by viewModel.batteryInfo.collectAsState()
+    val simSlots by viewModel.simSlots.collectAsState()
+    val memories by viewModel.memories.collectAsState()
+    val devModeEnabled by viewModel.devModeEnabled.collectAsState()
+    val devLogs by viewModel.devLogs.collectAsState()
+
+    SettingsScreen(
+        isAccessibilityActive = isAccessibilityActive,
+        batteryInfo = batteryInfo,
+        simSlots = simSlots,
+        memories = memories,
+        devModeEnabled = devModeEnabled,
+        devLogs = devLogs,
+        onOpenAccessibilitySettings = { viewModel.accessibilityController.openAccessibilitySettings() },
+        onOpenSocial = onOpenUrl,
+        onOpenOrbStudio = { viewModel.selectInterface(TitonoxInterface.ORB_STUDIO) },
+        onOpenApiSettings = { viewModel.selectInterface(TitonoxInterface.MODELS) },
+        onSaveMemory = { k, v -> viewModel.addMemory(k, v) },
+        onDeleteMemory = { id -> viewModel.deleteMemory(id) },
+        onClearAllMemories = { viewModel.clearAllMemories() },
+        onToggleDevMode = { viewModel.toggleDevMode() }
+    )
 }

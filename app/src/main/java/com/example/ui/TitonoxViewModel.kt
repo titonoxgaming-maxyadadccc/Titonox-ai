@@ -54,13 +54,24 @@ enum class MainTab {
 }
 
 enum class TitonoxInterface {
-    CORE,        // Futuristic AI Command Center & Orb
-    CONTROL,     // Futuristic Android Control Center & Telemetry
-    VISION,      // Cyber HUD Computer Vision & Screen Inspector
-    STUDIO,      // Productivity Workspace (Notepad, Todos, Calendar)
-    PLAYER,      // Premium Futuristic Music Player
-    ORB_STUDIO,  // 32+ Floating Orb Themes & Visual Customization
-    API_SETTINGS // Real Google Gemini API Configuration & Registered Tools
+    HOME,
+    CHAT,
+    AGENT,
+    AUTOMATION,
+    TOOLS,
+    VISION,
+    MEMORY,
+    MODELS,
+    SETTINGS,
+    PLAYER,
+    ORB_STUDIO;
+
+    companion object {
+        val CORE = HOME
+        val CONTROL = AUTOMATION
+        val STUDIO = TOOLS
+        val API_SETTINGS = MODELS
+    }
 }
 
 data class DevLog(
@@ -102,6 +113,103 @@ class TitonoxViewModel(application: Application) : AndroidViewModel(application)
 
     val memories: StateFlow<List<MemoryEntity>> = repository.allMemories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val customModels: StateFlow<List<com.example.data.CustomModelEntity>> = repository.allCustomModels
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val recentTasks: StateFlow<List<com.example.data.TaskHistoryEntity>> = repository.recentTasks
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun addCustomModel(
+        providerName: String,
+        modelName: String,
+        modelId: String,
+        apiBaseUrl: String,
+        apiKey: String,
+        requestFormat: String = "OpenAI",
+        responseFormat: String = "OpenAI",
+        authHeader: String = "Bearer",
+        temperature: Float = 0.7f,
+        maxTokens: Int = 2048,
+        contextWindow: Int = 32768,
+        visionSupport: Boolean = false,
+        toolCalling: Boolean = true,
+        streaming: Boolean = true
+    ) {
+        viewModelScope.launch {
+            repository.saveCustomModel(
+                com.example.data.CustomModelEntity(
+                    providerName = providerName,
+                    modelName = modelName,
+                    modelId = modelId,
+                    apiBaseUrl = apiBaseUrl,
+                    apiKey = apiKey,
+                    requestFormat = requestFormat,
+                    responseFormat = responseFormat,
+                    authHeader = authHeader,
+                    temperature = temperature,
+                    maxTokens = maxTokens,
+                    contextWindow = contextWindow,
+                    visionSupport = visionSupport,
+                    toolCalling = toolCalling,
+                    streaming = streaming
+                )
+            )
+        }
+    }
+
+    fun deleteCustomModel(id: Long) {
+        viewModelScope.launch {
+            repository.deleteCustomModel(id)
+        }
+    }
+
+    fun selectCustomModel(model: com.example.data.CustomModelEntity) {
+        viewModelScope.launch {
+            repository.selectCustomModel(model.id)
+            apiManager.switchProvider(com.example.ai.api.AIProviderType.CUSTOM, model.modelId)
+            apiManager.storage.saveKeyForProvider(com.example.ai.api.AIProviderType.CUSTOM, model.apiKey)
+            apiManager.storage.saveBaseUrlForProvider(com.example.ai.api.AIProviderType.CUSTOM, model.apiBaseUrl)
+            apiManager.storage.saveAuthHeaderForProvider(com.example.ai.api.AIProviderType.CUSTOM, model.authHeader)
+        }
+    }
+
+    fun addMemory(key: String, value: String, category: String = "UserPreference") {
+        viewModelScope.launch {
+            repository.saveMemory(key, value, category)
+        }
+    }
+
+    fun clearAllMemories() {
+        viewModelScope.launch {
+            repository.clearMemories()
+        }
+    }
+
+    fun switchProvider(provider: com.example.ai.api.AIProviderType, model: String? = null) {
+        apiManager.switchProvider(provider, model)
+    }
+
+    fun updateProviderKey(provider: com.example.ai.api.AIProviderType, key: String) {
+        apiManager.storage.saveKeyForProvider(provider, key)
+        if (apiManager.config.value.provider == provider) {
+            apiManager.updateConfig(apiManager.config.value.copy(apiKey = key))
+        }
+    }
+
+    fun updateProviderModel(provider: com.example.ai.api.AIProviderType, model: String) {
+        apiManager.storage.saveModelForProvider(provider, model)
+        if (apiManager.config.value.provider == provider) {
+            apiManager.updateConfig(apiManager.config.value.copy(model = model))
+        }
+    }
+
+    fun updateProviderBaseUrl(provider: com.example.ai.api.AIProviderType, url: String) {
+        apiManager.storage.saveBaseUrlForProvider(provider, url)
+        if (apiManager.config.value.provider == provider) {
+            apiManager.updateConfig(apiManager.config.value.copy(baseUrl = url))
+        }
+    }
 
     // Voice & Tasks
     val orbSettingsRepo = com.example.floating.OrbSettingsRepository.getInstance(application)
@@ -175,6 +283,14 @@ class TitonoxViewModel(application: Application) : AndroidViewModel(application)
 
     fun speakText(text: String) {
         voiceManager.speak(text)
+    }
+
+    fun toggleListening() {
+        if (voiceManager.isListening.value) {
+            voiceManager.stopListening()
+        } else {
+            voiceManager.startListening()
+        }
     }
 
     fun triggerEmergencyStop() {
